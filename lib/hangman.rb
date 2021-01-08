@@ -5,22 +5,40 @@ secret_word = wordlist.sample.downcase.chars
 word_length = secret_word.length
 
 puts secret_word.inspect
+# initialize the guesses display
 display = []
 word_length.times do 
   display << '_'
 end
 
-# first time display for user to know how many places
-display.each do |char|
-  print "#{char} "
+def valid_input(input)
+  if input.length != 1
+    puts 'Too many letters, enter only one!'
+    return false
+  elsif !input.match?(/[a-z]/)
+    puts 'Not alphabet letter, please enter an alphabet letter!'
+    return false
+  else
+    true
+  end
+  # return true if input.match?(/[a-z]/) && input.length == 1
 end
 
 # start the game
 wrong_guesses = 10
 guesses = []
-until secret_word == display || wrong_guesses < 0
-  puts "\nguess a letter"
+until secret_word == display || wrong_guesses.negative?
+  # display current results
+  display.each do |char|
+    print "#{char} "
+  end
+  puts "\nGuess a letter"
   guess = gets.chomp.downcase
+
+  until valid_input(guess)
+    puts "\nGuess a letter"
+    guess = gets.chomp.downcase
+  end
 
   if secret_word.include?(guess)
     puts Rainbow('Good guess!').green
@@ -39,10 +57,5 @@ until secret_word == display || wrong_guesses < 0
   guesses.each do |char|
     print "#{char} "
   end
-
-  print "\n"
-  # display current results
-  display.each do |char|
-    print "#{char} "
-  end
+  puts "\n\n"
 end
