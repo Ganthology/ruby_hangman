@@ -27,6 +27,14 @@ def valid_input(input, guessed_letters)
   # return true if input.match?(/[a-z]/) && input.length == 1
 end
 
+def display_guessed_list(guessed_letters_display)
+    print 'Letters guessed: '
+    guessed_letters_display.each do |char|
+      print "#{char} "
+    end
+    print "\n"
+end
+
 # start the game
 wrong_guesses = 10
 guessed_letters = []
@@ -45,6 +53,8 @@ until secret_word == display || wrong_guesses.negative?
     guess = gets.chomp.downcase
   end
 
+  print "\n"
+
   if secret_word.include?(guess)
     puts Rainbow('Good guess!').green
     guessed_letters << guess
@@ -60,11 +70,25 @@ until secret_word == display || wrong_guesses.negative?
     wrong_guesses -= 1
   end
 
-  puts "Wrong guesses left: #{wrong_guesses}" if wrong_guesses.positive?
-
-  print 'Letters guessed: '
-  guessed_letters_display.each do |char|
-    print "#{char} "
+  if wrong_guesses.positive?
+    puts "Wrong guesses left: #{wrong_guesses}" 
+    display_guessed_list(guessed_letters_display)
+    # print 'Letters guessed: '
+    # guessed_letters_display.each do |char|
+    #   print "#{char} "
+    # end
+    # puts "\n"
+  elsif wrong_guesses.zero?
+    puts 'Last chance, 0 guesses left'
+    display_guessed_list(guessed_letters_display)
+    # print 'Letters guessed: '
+    # guessed_letters_display.each do |char|
+    #   print "#{char} "
+    # end
+    # puts "\n"
+  else
+    puts 'You lose...'
   end
-  puts "\n\n"
 end
+puts 'You win the game!' if secret_word == display
+puts "The secret word is #{secret_word.join}."
