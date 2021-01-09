@@ -21,8 +21,25 @@ class Hangman
     @guessed_letters_display = []
   end
 
+  def save_game
+    Dir.mkdir('saved_files') unless Dir.exist?('saved_files')
+    print 'Enter the name of the saved game: '
+    filename = gets.chomp
+    saved_file = "saved_files/#{filename}.json"
+    File.open(saved_file, 'w') do |_file|
+      JSON.dump({
+                  secret_word: @secret_word,
+                  guessed_word: @guessed_word,
+                  guessed_letters_list: @guessed_letters_list,
+                  guessed_letters_display: @guessed_letters_display,
+                  wrong_guesses: @wrong_guesses
+                })
+    end
+    print "\n"
+  end
+
   def load_game(filename)
-    data = JSON.load(filename)
+    data = JSON.parse(File.read(filename))
     @secret_word = data['secret_word']
     @guessed_word = data['guessed_word']
     @guessed_letters_list = data['guessed_letters_list']
