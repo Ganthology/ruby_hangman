@@ -1,4 +1,5 @@
 require 'rainbow'
+require 'json'
 
 class Hangman
   attr_accessor :secret_word, :guessed_word, :guessed_letters_list, :guessed_letters_display, :wrong_guesses
@@ -18,6 +19,15 @@ class Hangman
     @wrong_guesses = 10
     @guessed_letters_list = []
     @guessed_letters_display = []
+  end
+
+  def load_game(filename)
+    data = JSON.load(filename)
+    @secret_word = data['secret_word']
+    @guessed_word = data['guessed_word']
+    @guessed_letters_list = data['guessed_letters_list']
+    @guessed_letters_display = data['guessed_letters_display']
+    @wrong_guesses = data['wrong_guesses']
   end
 
   def choose_options
