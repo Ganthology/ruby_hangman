@@ -2,16 +2,15 @@ require 'rainbow'
 wordlist = File.open('5desk.txt', 'r') { |file| file.readlines.map(&:strip) }
 
 secret_word = wordlist.sample.downcase.chars
-word_length = secret_word.length
 
 puts secret_word.inspect
 # initialize the guesses display
-display = []
-word_length.times do 
-  display << '_'
-end
+display = ('_' * secret_word.length).split('')
+# word_length.times do
+#   display << '_'
+# end
 
-def valid_input(input, guessed_letters)
+def valid_input?(input, guessed_letters)
   if input.length != 1
     puts 'Too many letters, enter only one!'
     false
@@ -27,12 +26,12 @@ def valid_input(input, guessed_letters)
   # return true if input.match?(/[a-z]/) && input.length == 1
 end
 
-def display_guessed_list(guessed_letters_display)
-    print 'Letters guessed: '
-    guessed_letters_display.each do |char|
-      print "#{char} "
-    end
-    print "\n"
+def print_guessed_letters(guessed_letters_display)
+  print 'Letters guessed: '
+  guessed_letters_display.each do |char|
+    print "#{char} "
+  end
+  print "\n"
 end
 
 # start the game
@@ -48,7 +47,7 @@ until secret_word == display || wrong_guesses.negative?
   puts "\nGuess a letter"
   guess = gets.chomp.downcase
 
-  until valid_input(guess, guessed_letters)
+  until valid_input?(guess, guessed_letters)
     puts "\nGuess a letter"
     guess = gets.chomp.downcase
   end
@@ -71,8 +70,8 @@ until secret_word == display || wrong_guesses.negative?
   end
 
   if wrong_guesses.positive?
-    puts "Wrong guesses left: #{wrong_guesses}" 
-    display_guessed_list(guessed_letters_display)
+    puts "Wrong guesses left: #{wrong_guesses}"
+    print_guessed_letters(guessed_letters_display)
     # print 'Letters guessed: '
     # guessed_letters_display.each do |char|
     #   print "#{char} "
@@ -80,7 +79,7 @@ until secret_word == display || wrong_guesses.negative?
     # puts "\n"
   elsif wrong_guesses.zero?
     puts 'Last chance, 0 guesses left'
-    display_guessed_list(guessed_letters_display)
+    print_guessed_letters(guessed_letters_display)
     # print 'Letters guessed: '
     # guessed_letters_display.each do |char|
     #   print "#{char} "
