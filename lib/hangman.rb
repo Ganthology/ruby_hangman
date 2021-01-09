@@ -54,6 +54,34 @@ class Hangman
     @wrong_guesses = data['wrong_guesses']
   end
 
+  def check_save_game
+    print "\nDo you want to save the game?(press Y to save)"
+    save = gets.chomp
+    if save.downcase == 'y'
+      save_game
+      puts 'The game has been saved...'
+      true
+    else
+      puts 'The game is continuing...'
+      false
+    end
+  end
+
+  def check_include_secret_word(guess)
+    if secret_word.include?(guess)
+      puts Rainbow('Good guess!').green
+      @guessed_letters_list << guess
+      @guessed_letters_display << Rainbow(guess).green
+      indexes = @secret_word.each_index.select { |i| @secret_word[i] == guess }
+      indexes.each { |index| @guessed_word[index] = guess }
+    else
+      puts Rainbow('Wrong guess!').red
+      @guessed_letters_list << guess
+      @guessed_letters_display << Rainbow(guess).red
+      @wrong_guesses -= 1
+    end
+  end
+
   def choose_options
     puts "Choose a game option: 1) Start a new game
                       2) Load a saved game file"
@@ -63,10 +91,8 @@ class Hangman
       new_game
     when '2'
       if Dir.exist?('saved_files')
-        puts 'The saved game list'
-        Dir.glob('saved_files/*').each do |filename|
-          puts filename
-        end
+        puts Rainbow.('The saved game list').orange
+        Dir.glob('saved_files/*').each { |filename| puts Rainbow(filename).orange }
         puts Rainbow('*').orange * 20
         print 'Enter the saved file name: '
         filename = gets.chomp
@@ -78,6 +104,7 @@ class Hangman
       end
     else puts 'Enter 1 or 2 to start the game...'
     end
+    print "\n"
   end
 
   def valid_input?(input, guessed_letters_list)
@@ -97,33 +124,25 @@ class Hangman
 
   def print_guessed_letters(guessed_letters_display)
     print 'Letters guessed: '
-    guessed_letters_display.each do |char|
-      print "#{char} "
-    end
+    guessed_letters_display.each { |char| print "#{char} " }
     print "\n"
+  end
+
+  def wrong_guesses_message(wrong_guesses)
+    if wrong_guesses.positive?
+      puts Rainbow("Wrong guesses left: #{wrong_guesses}").yellow
+    elsif wrong_guesses.zero?
+      puts Rainbow('Last chance, 0 guesses left').red
+    end
   end
 
   # start the game
   def start_game
     puts Rainbow('*').yellow * 20
     until @secret_word == @guessed_word || @wrong_guesses.negative?
-      if @wrong_guesses.positive?
-        puts "Wrong guesses left: #{@wrong_guesses}"
-      elsif @wrong_guesses.zero?
-        puts Rainbow('Last chance, 0 guesses left').red
-      end
-
+      wrong_guesses_message(@wrong_guesses)
       # display current results
-      @guessed_word.each do |char|
-        print "#{char} "
-      end
-
-      print "\nDo you want to save the game?(Y/N)"
-      save = gets.chomp
-      if save.downcase == 'y'
-        save_game
-        break
-      end
+      @guessed_word.each { |char| print "#{char} " }
 
       print "\nGuess a letter: "
       guess = gets.chomp.downcase
@@ -132,22 +151,13 @@ class Hangman
         print "\nGuess a letter: "
         guess = gets.chomp.downcase
       end
-      if secret_word.include?(guess)
-        puts Rainbow('Good guess!').green
-        @guessed_letters_list << guess
-        @guessed_letters_display << Rainbow(guess).green
-        indexes = @secret_word.each_index.select { |i| @secret_word[i] == guess }
-        indexes.each do |index|
-          @guessed_word[index] = guess
-        end
-      else
-        puts Rainbow('Wrong guess!').red
-        @guessed_letters_list << guess
-        @guessed_letters_display << Rainbow(guess).red
-        @wrong_guesses -= 1
-      end
+
+      check_include_secret_word(guess)
+    
       print_guessed_letters(@guessed_letters_display)
-      print "\n"
+
+      return if check_save_game
+
       puts Rainbow('*').yellow * 20
     end
     # Announce the results, Win or Lose
