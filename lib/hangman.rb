@@ -26,19 +26,26 @@ class Hangman
     print 'Enter the name of the saved game: '
     filename = gets.chomp
     saved_file = "saved_files/#{filename}.json"
-    File.open(saved_file, 'w') do |_file|
-      JSON.dump({
-                  secret_word: @secret_word,
-                  guessed_word: @guessed_word,
-                  guessed_letters_list: @guessed_letters_list,
-                  guessed_letters_display: @guessed_letters_display,
-                  wrong_guesses: @wrong_guesses
-                })
+    File.open(saved_file, 'w') do |file|
+      file.puts JSON.dump({
+                            secret_word: @secret_word,
+                            guessed_word: @guessed_word,
+                            guessed_letters_list: @guessed_letters_list,
+                            guessed_letters_display: @guessed_letters_display,
+                            wrong_guesses: @wrong_guesses
+                          })
     end
     print "\n"
   end
 
   def load_game(filename)
+    # check correct filename
+    until File.exist?(filename)
+      puts 'The filename is incorrect...'
+      print 'Please enter a correct saved game filename: '
+      input = gets.chomp
+      filename = "saved_files/#{input}.json"
+    end
     data = JSON.parse(File.read(filename))
     @secret_word = data['secret_word']
     @guessed_word = data['guessed_word']
@@ -52,8 +59,23 @@ class Hangman
                       2) Load a saved game file"
     option = gets.chomp
     case option
-    when '1' then new_game
-    when '2' then load_game
+    when '1'
+      new_game
+    when '2'
+      if Dir.exist?('saved_files')
+        puts 'The saved game list'
+        Dir.glob('saved_files/*').each do |filename|
+          puts filename
+        end
+        puts Rainbow('*').orange * 20
+        print 'Enter the saved file name: '
+        filename = gets.chomp
+        load_game("saved_files/#{filename}.json")
+      else
+        puts 'There is no saved file...'
+        puts 'Starting a new game...'
+        new_game
+      end
     else puts 'Enter 1 or 2 to start the game...'
     end
   end
@@ -83,22 +105,33 @@ class Hangman
 
   # start the game
   def start_game
+    puts Rainbow('*').yellow * 20
     until @secret_word == @guessed_word || @wrong_guesses.negative?
+      if @wrong_guesses.positive?
+        puts "Wrong guesses left: #{@wrong_guesses}"
+      elsif @wrong_guesses.zero?
+        puts Rainbow('Last chance, 0 guesses left').red
+      end
+
       # display current results
       @guessed_word.each do |char|
         print "#{char} "
       end
 
-      puts "\nGuess a letter"
+      print "\nDo you want to save the game?(Y/N)"
+      save = gets.chomp
+      if save.downcase == 'y'
+        save_game
+        break
+      end
+
+      print "\nGuess a letter: "
       guess = gets.chomp.downcase
 
       until valid_input?(guess, @guessed_letters_list)
-        puts "\nGuess a letter"
+        print "\nGuess a letter: "
         guess = gets.chomp.downcase
       end
-
-      print "\n"
-
       if secret_word.include?(guess)
         puts Rainbow('Good guess!').green
         @guessed_letters_list << guess
@@ -113,28 +146,14 @@ class Hangman
         @guessed_letters_display << Rainbow(guess).red
         @wrong_guesses -= 1
       end
-
-      if @wrong_guesses.positive?
-        puts "Wrong guesses left: #{@wrong_guesses}"
-        print_guessed_letters(@guessed_letters_display)
-        # print 'Letters guessed: '
-        # @guessed_letters_display.each do |char|
-        #   print "#{char} "
-        # end
-        # puts "\n"
-      elsif @wrong_guesses.zero?
-        puts 'Last chance, 0 guesses left'
-        print_guessed_letters(@guessed_letters_display)
-        # print 'Letters guessed: '
-        # @guessed_letters_display.each do |char|
-        #   print "#{char} "
-        # end
-        # puts "\n"
-      else
-        puts 'You lose...'
-      end
+      print_guessed_letters(@guessed_letters_display)
+      print "\n"
+      puts Rainbow('*').yellow * 20
     end
+    # Announce the results, Win or Lose
     puts 'You win the game!' if @secret_word == @guessed_word
+    puts 'You lose!' if @secret_word != @guessed_word
+
     puts "The secret word is #{@secret_word.join}."
   end
 end
